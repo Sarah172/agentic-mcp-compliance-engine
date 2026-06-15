@@ -1,0 +1,117 @@
+{
+  "scanned_resources": [
+    {
+      "resource_id": "iam-user-dev01",
+      "service": "AWS IAM",
+      "policy_document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+          }
+        ]
+      },
+      "notes": "Developer account requested temporary admin access for troubleshooting."
+    },
+    {
+      "resource_id": "s3-bucket-financial-reports",
+      "service": "AWS S3",
+      "policy_document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::financial-reports-2026/*"
+          }
+        ]
+      },
+      "notes": "Bucket intended for internal audit team only."
+    },
+    {
+      "resource_id": "sg-public-ssh-access",
+      "service": "AWS EC2",
+      "policy_document": {
+        "IpPermissions": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "IpRanges": [
+              {
+                "CidrIp": "0.0.0.0/0",
+                "Description": "Allow all inbound SSH"
+              }
+            ]
+          }
+        ]
+      },
+      "notes": "Web server security group. SSH should be restricted to the corporate VPN."
+    },
+    {
+      "resource_id": "s3-customer-pii-data",
+      "service": "AWS S3",
+      "policy_document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::customer-pii-data-2026/*",
+            "Condition": {
+              "Bool": {
+                "aws:SecureTransport": "false"
+              }
+            }
+          }
+        ]
+      },
+      "notes": "Storage for customer profiles. Missing strict HTTPS enforcement."
+    },
+    {
+      "resource_id": "iam-user-prod-readonly",
+      "service": "AWS IAM",
+      "policy_document": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "s3:GetObject",
+              "s3:ListBucket"
+            ],
+            "Resource": [
+              "arn:aws:s3:::prod-app-data",
+              "arn:aws:s3:::prod-app-data/*"
+            ]
+          }
+        ]
+      },
+      "notes": "Properly scoped read-only access for production."
+    },
+    {
+      "resource_id": "sg-internal-db",
+      "service": "AWS EC2",
+      "policy_document": {
+        "IpPermissions": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "IpRanges": [
+              {
+                "CidrIp": "10.0.0.0/8",
+                "Description": "Allow PostgreSQL traffic only from internal VPC"
+              }
+            ]
+          }
+        ]
+      },
+      "notes": "Database security group restricted to internal network."
+    }
+  ]
+}

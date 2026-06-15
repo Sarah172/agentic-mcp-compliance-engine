@@ -1,0 +1,4 @@
+openai
+mcp
+python-dotenv
+pydantic

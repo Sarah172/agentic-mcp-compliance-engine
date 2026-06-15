@@ -1,0 +1,9 @@
+# Ignore environment variables
+.env
+
+# Ignore virtual environments
+venv/
+__pycache__/
+
+# Ignore generated audit reports (optional, if you don't want them tracked)
+*.md
