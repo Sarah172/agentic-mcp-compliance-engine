@@ -19,9 +19,9 @@ def fetch_cloud_policies() -> str:
     
     try:
         with open(file_path, "r") as file:
-            # Load the dense structural data
+            # loads the dense structural data
             data = json.load(file)
-            # Minimize layout spacing slightly to optimize LLM context usage
+            # minimize layout spacing slightly to optimize LLM context usage
             return json.dumps(data, indent=2)
     except Exception as e:
         return f"Error reading the Cloudsplaining policy file: {str(e)}"
