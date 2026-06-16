@@ -10,7 +10,7 @@ from mcp.client.session import ClientSession
 from mcp.client.stdio import stdio_client, StdioServerParameters
 from dotenv import load_dotenv
 
-# NEW: Import your deterministic rule engine
+# imports deterministic rule engine
 from rules import run_compliance_rules
 
 # --- Pydantic Data Models ---
@@ -75,7 +75,7 @@ async def run_agent():
         3. Assign a severity (High, Critical).
         """
         
-        # We only send the findings, NOT the massive raw JSON!
+        # only to send the findings not massive raw JSON
         findings_payload = json.dumps(hardcoded_findings, indent=2)
         
         response = await llm_client.beta.chat.completions.parse(
@@ -89,7 +89,7 @@ async def run_agent():
         
         report_data = response.choices[0].message.parsed
         
-        # --- STEP 4: DYNAMIC MARKDOWN GENERATION ---
+        # STEP 4: DYNAMIC MARKDOWN GENERATION 
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         filename = f"Compliance_Audit_Report_{timestamp}.md"
         
