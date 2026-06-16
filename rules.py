@@ -11,7 +11,7 @@ def detect_s3_full_access(policy_str):
 
 def run_compliance_rules(raw_json_data):
     """
-    Scans the raw JSON payload against deterministic security rules.
+    Scans raw JSON payload against deterministic security rules and 
     Returns a list of programmatic findings.
     """
     findings = []
@@ -20,21 +20,21 @@ def run_compliance_rules(raw_json_data):
         data = json.loads(raw_json_data)
         resources_to_scan = []
         
-        # Parse Cloudsplaining AWS Format
+        # parses Cloudsplaining AWS format
         cloudsplaining_keys = ["UserDetailList", "RoleDetailList", "GroupDetailList", "Policies"]
         for key in cloudsplaining_keys:
             if key in data and isinstance(data[key], list):
                 for item in data[key]:
-                    # Extract the actual name of the AWS user, role, or policy
+                    # extracts actual name of AWS user, role, or policy
                     name = item.get("UserName") or item.get("RoleName") or item.get("GroupName") or item.get("PolicyName") or "Unknown IAM Resource"
                     
-                    # Convert the entire item block to a string to run our regex/string rules against it
+                    # converts entire item block to string to run the regex/string rules against it
                     resources_to_scan.append({
                         "name": name,
                         "content_str": json.dumps(item)
                     })
 
-        # Run the deterministic rules against every extracted resource
+        # runs deterministic rules against every extracted resource
         for resource in resources_to_scan:
             name = resource["name"]
             content = resource["content_str"]
