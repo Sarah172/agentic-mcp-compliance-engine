@@ -5,5 +5,6 @@
 venv/
 __pycache__/
 
-# Ignore generated audit reports (optional, if you don't want them tracked)
-*.md
+# Ignore generated audit reports (only these, not docs like README.md / CLAUDE.md / SKILL.md)
+Compliance_Audit_Report_*.md
+.pytest_cache/
