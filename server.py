@@ -15,16 +15,15 @@ def fetch_cloud_policies() -> str:
     file_path = "cloudsplaining_iam_details.json"
     
     if not os.path.exists(file_path):
-        return f"Error: Could not find {file_path} in the current directory."
+        # raise (not return) so MCP marks the result isError=True and the
+        # client fails closed instead of treating an error message as data
+        raise FileNotFoundError(f"Could not find {file_path} in the current directory.")
     
-    try:
-        with open(file_path, "r") as file:
-            # loads the dense structural data
-            data = json.load(file)
-            # minimize layout spacing slightly to optimize LLM context usage
-            return json.dumps(data, indent=2)
-    except Exception as e:
-        return f"Error reading the Cloudsplaining policy file: {str(e)}"
+    with open(file_path, "r") as file:
+        # loads the dense structural data; a parse error propagates as an MCP tool error
+        data = json.load(file)
+    # minimize layout spacing slightly to optimize LLM context usage
+    return json.dumps(data, indent=2)
 
 #run server using standard input/output
 if __name__ == "__main__":

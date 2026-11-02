@@ -11,7 +11,7 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 from dotenv import load_dotenv
 
 # imports deterministic rule engine
-from rules import run_compliance_rules
+from rules import run_compliance_rules, ComplianceScanError
 
 # --- Pydantic Data Models ---
 class FindingDetail(BaseModel):
@@ -48,19 +48,34 @@ async def run_agent():
                 await session.initialize()
                 print("Agent: Requesting cloud policies from MCP server...")
                 result = await session.call_tool("fetch_cloud_policies", arguments={})
+                if result.isError:
+                    detail = " ".join(getattr(b, "text", "") for b in result.content).strip()
+                    print(f"\n❌ [MCP ERROR] Tool returned an error: {detail or 'unknown error'}")
+                    print("❌ SCAN FAILED: no compliance verdict could be produced.")
+                    return 1
+                if not result.content or not hasattr(result.content[0], "text"):
+                    print("\n❌ [MCP ERROR] Tool returned no text content.")
+                    print("❌ SCAN FAILED: no compliance verdict could be produced.")
+                    return 1
                 raw_data = result.content[0].text
                 print("Agent: Data retrieved! Safely closing MCP connection...\n")
     except Exception as e:
         print(f"\n❌ [MCP ERROR] Failed to get data: {e}")
-        return
+        print("❌ SCAN FAILED: no compliance verdict could be produced.")
+        return 1
 
     # --- STEP 2: DETERMINISTIC RULE SCAN (Neuro-Symbolic Pipeline) ---
     print("Agent: Running deterministic Python rule engine...")
-    hardcoded_findings = run_compliance_rules(raw_data)
-    
+    try:
+        hardcoded_findings = run_compliance_rules(raw_data)
+    except ComplianceScanError as e:
+        print(f"\n❌ [SCAN ERROR] {e}")
+        print("❌ SCAN FAILED: this is NOT a clean result. Infrastructure was not verified.")
+        return 1
+
     if not hardcoded_findings:
-        print("✅ Rule engine found zero vulnerabilities. Infrastructure is secure.")
-        return
+        print("✅ Rule engine scanned resources and found zero vulnerabilities. Infrastructure is secure.")
+        return 0
         
     print(f"Agent: Rule engine flagged {len(hardcoded_findings)} resources. Forwarding to LLM for context mapping...\n")
 
@@ -112,6 +127,8 @@ async def run_agent():
 
     except Exception as e:
         print(f"\n [LLM ERROR] The AI processing failed: {e}")
+        return 1
+    return 0
 
 if __name__ == "__main__":
-    asyncio.run(run_agent())
+    sys.exit(asyncio.run(run_agent()))
